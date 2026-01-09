@@ -19,3 +19,6 @@ vet:
 
 run: build
 	./$(BINARY_NAME)
+
+docker:
+	docker build -t ai-harness:latest .
