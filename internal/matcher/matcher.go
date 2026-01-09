@@ -18,8 +18,8 @@ type MatcherFile struct {
 }
 
 func Save(errorLog string, result *analyzer.AnalysisResult) error {
-	outputDir := "../package-suggestions/matchers"
-	
+	outputDir := "./matchers"
+
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return fmt.Errorf("failed to create matcher directory: %w", err)
 	}
