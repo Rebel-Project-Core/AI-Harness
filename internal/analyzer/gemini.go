@@ -10,15 +10,19 @@ import (
 	"time"
 )
 
-const geminiURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
-
-func analyzeGemini(prompt string) (*AnalysisResult, error) {
+func analyzeGemini(prompt string, modelName string) (*AnalysisResult, error) {
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
 		return nil, fmt.Errorf("GEMINI_API_KEY environment variable is not set")
 	}
 
-	requestBody, err := json.Marshal(map[string]any{
+	if modelName == "" {
+		modelName = "gemini-2.5-flash"
+	}
+
+	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent", modelName)
+
+	requestBody, err := json.Marshal(map[string]interface{}{
 		"contents": []any{
 			map[string]any{
 				"parts": []any{
@@ -36,7 +40,7 @@ func analyzeGemini(prompt string) (*AnalysisResult, error) {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", geminiURL+"?key="+apiKey, bytes.NewBuffer(requestBody))
+	req, err := http.NewRequest("POST", url+"?key="+apiKey, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

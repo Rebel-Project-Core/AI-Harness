@@ -20,14 +20,14 @@ type AnalysisResult struct {
 	InstallCommands []string `json:"install_commands"`
 }
 
-func Analyze(errorLog string) (*AnalysisResult, error) {
+func Analyze(errorLog string, modelName string) (*AnalysisResult, error) {
 	prompt := constructPrompt(errorLog)
 
 	if os.Getenv("GEMINI_API_KEY") != "" {
-		return analyzeGemini(prompt)
+		return analyzeGemini(prompt, modelName)
 	}
 	if os.Getenv("OPENAI_API_KEY") != "" {
-		return analyzeOpenAI(prompt)
+		return analyzeOpenAI(prompt, modelName)
 	}
 
 	return nil, fmt.Errorf("no API key found. Please set GEMINI_API_KEY or OPENAI_API_KEY")

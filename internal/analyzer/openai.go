@@ -13,15 +13,19 @@ import (
 
 const openAIURL = "https://api.openai.com/v1/chat/completions"
 
-func analyzeOpenAI(prompt string) (*AnalysisResult, error) {
+func analyzeOpenAI(prompt string, modelName string) (*AnalysisResult, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
 		return nil, fmt.Errorf("OPENAI_API_KEY environment variable is not set")
 	}
 
-	requestBody, err := json.Marshal(map[string]any{
-		"model": "gpt-4o",
-		"messages": []any{
+	if modelName == "" {
+		modelName = "gpt-4o"
+	}
+
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"model": modelName,
+		"messages": []interface{}{
 			map[string]any{
 				"role":    "user",
 				"content": prompt,
