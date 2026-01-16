@@ -19,15 +19,15 @@ func analyzeOpenAI(prompt string) (*AnalysisResult, error) {
 		return nil, fmt.Errorf("OPENAI_API_KEY environment variable is not set")
 	}
 
-	requestBody, err := json.Marshal(map[string]interface{}{
+	requestBody, err := json.Marshal(map[string]any{
 		"model": "gpt-4o",
-		"messages": []interface{}{
-			map[string]interface{}{
+		"messages": []any{
+			map[string]any{
 				"role":    "user",
 				"content": prompt,
 			},
 		},
-		"response_format": map[string]interface{}{
+		"response_format": map[string]any{
 			"type": "json_object",
 		},
 	})
@@ -75,13 +75,13 @@ func analyzeOpenAI(prompt string) (*AnalysisResult, error) {
 	}
 
 	responseText := openAIResp.Choices[0].Message.Content
-	
-    // Sometimes OpenAI might return markdown code blocks even with json_object mode, though usually it doesn't.
-    // Just in case, clean it up.
-    responseText = strings.TrimPrefix(responseText, "```json")
-    responseText = strings.TrimPrefix(responseText, "```")
-    responseText = strings.TrimSuffix(responseText, "```")
-    
+
+	// Sometimes OpenAI might return markdown code blocks even with json_object mode, though usually it doesn't.
+	// Just in case, clean it up.
+	responseText = strings.TrimPrefix(responseText, "```json")
+	responseText = strings.TrimPrefix(responseText, "```")
+	responseText = strings.TrimSuffix(responseText, "```")
+
 	var result AnalysisResult
 	if err := json.Unmarshal([]byte(responseText), &result); err != nil {
 		return nil, fmt.Errorf("failed to parse JSON from LLM: %w \nResponse: %s", err, responseText)
