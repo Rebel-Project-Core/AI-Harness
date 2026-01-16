@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -15,7 +16,57 @@ func main() {
 	modelFlag := flag.String("model", "", "Model name to use (e.g. gpt-4o, gemini-1.5-pro)")
 	flag.Parse()
 
-	args := flag.Args()
+	combinedLog, command, exitCode := getExecutionLog(flag.Args())
+
+	// Analyze the error
+	analysis, err := analyzer.Analyze(combinedLog, *modelFlag)
+	if err != nil {
+		log.Fatalf("Analysis failed: %v", err)
+	}
+
+	printAnalysis(analysis)
+
+	if len(analysis.Packages) == 0 {
+		fmt.Println("No packages suggested. Exiting.")
+		os.Exit(exitCode)
+	}
+
+	success := true
+	if command != "" {
+		success = retryInstallation(command, analysis.Packages)
+	} else {
+		fmt.Println("Skipping installation (no command provided).")
+	}
+
+	if success {
+		// Save the successful match (or just the match if no verification was possible)
+		err := matcher.Save(combinedLog, analysis)
+		if err != nil {
+			fmt.Printf("Warning: Failed to save matcher: %v\n", err)
+		}
+	} else {
+		os.Exit(1)
+	}
+}
+
+// getExecutionLog determines whether to read from stdin or run a command.
+// Returns the log content, the command name (if any), and the exit code.
+// Exits the program if the initial command succeeds or if usage is incorrect.
+func getExecutionLog(args []string) (string, string, int) {
+	stat, _ := os.Stdin.Stat()
+	if (stat.Mode() & os.ModeCharDevice) == 0 {
+		// Stdin is piped
+		data, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			log.Fatalf("Failed to read from stdin: %v", err)
+		}
+		command := ""
+		if len(args) > 0 {
+			command = args[0]
+		}
+		return string(data), command, 1
+	}
+
 	if len(args) < 1 {
 		fmt.Println("Usage: ai-harness [--model <model_name>] <command> [args...]")
 		os.Exit(1)
@@ -33,35 +84,25 @@ func main() {
 	if result.ExitCode == 0 {
 		fmt.Println("Command executed successfully.")
 		fmt.Print(result.Stdout)
-		return
+		os.Exit(0)
 	}
 
 	fmt.Printf("Command failed (Exit Code %d). initiating AI analysis...\n", result.ExitCode)
+	return result.Stderr + "\n" + result.Stdout, command, result.ExitCode
+}
 
-	// Analyze the error
-	combinedLog := result.Stderr + "\n" + result.Stdout
-	analysis, err := analyzer.Analyze(combinedLog, *modelFlag)
-	if err != nil {
-		log.Fatalf("Analysis failed: %v", err)
-	}
-
+func printAnalysis(analysis *analyzer.AnalysisResult) {
 	fmt.Println("--- AI Analysis Result ---")
 	fmt.Printf("Matcher Regex: %s\n", analysis.Matcher)
 	fmt.Printf("Suggested Packages: %v\n", analysis.Packages)
 	fmt.Println("--------------------------")
+}
 
-	if len(analysis.Packages) == 0 {
-		fmt.Println("No packages suggested. Exiting.")
-		os.Exit(result.ExitCode)
-	}
-
-	// Retry installation WITH CREDO using suggested dependencies
+func retryInstallation(command string, packages []analyzer.Package) bool {
 	fmt.Printf("--- Attempt 2: Retrying installation with credo ---\n")
 
-	allSuccess := true
-	for _, pkg := range analysis.Packages {
+	for _, pkg := range packages {
 		// Construct args: [manager, package_name]
-		// This assumes credo accepts "manager package_name" (e.g., "pip Pillow")
 		retryArgs := []string{pkg.Manager, pkg.Name}
 
 		fmt.Printf("Command: %s %v\n", command, retryArgs)
@@ -77,18 +118,8 @@ func main() {
 		} else {
 			fmt.Println("Installation failed.")
 			fmt.Println(retryResult.Stderr)
-			allSuccess = false
-			break // Stop on first failure
+			return false
 		}
 	}
-
-	if allSuccess {
-		// Save the successful match
-		err := matcher.Save(combinedLog, analysis)
-		if err != nil {
-			fmt.Printf("Warning: Failed to save matcher: %v\n", err)
-		}
-	} else {
-		os.Exit(1)
-	}
+	return true
 }
