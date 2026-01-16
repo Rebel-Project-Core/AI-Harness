@@ -1,0 +1,72 @@
+name: Build
+on:
+  push:
+    branches: [main]
+  release:
+jobs:
+  build:
+    strategy:
+      matrix:
+        architecture:
+          - amd64
+          - arm64
+        platform:
+          - darwin
+          - linux
+          - windows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          check-latest: true
+      - name: Debug Git Information
+        run: |
+          git rev-parse --short HEAD
+          git describe --tags --exact-match || echo "No exact tag"
+          git status
+      - name: Test
+        run: |
+          make test
+      - name: Build
+        run: |
+          GOOS=${{ matrix.platform }} GOARCH=${{ matrix.architecture }} make
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/credoproject/ai-harness
+          tags: |
+            type=semver,pattern=v{{version}}
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/Rebel-Project-Core/ai-harness:latest-${{ matrix.architecture }}
+            ghcr.io/Rebel-Project-Core/ai-harness:${{ steps.meta.outputs.version }}-${{ matrix.architecture }}
+          labels: ${{ steps.meta.outputs.labels }}
+        if: matrix.platform == 'linux'
+
+      - uses: vimtor/action-zip@v1.2
+        with:
+          files: ai-harness
+          dest: ${{ matrix.platform }}_${{ matrix.architecture }}_ai-harness.zip
+      - uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            *_ai-harness.zip
