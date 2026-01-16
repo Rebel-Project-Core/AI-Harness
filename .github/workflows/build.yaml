@@ -56,8 +56,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/Rebel-Project-Core/ai-harness:latest-${{ matrix.architecture }}
-            ghcr.io/Rebel-Project-Core/ai-harness:${{ steps.meta.outputs.version }}-${{ matrix.architecture }}
+            ghcr.io/rebel-project-core/ai-harness:latest-${{ matrix.architecture }}
+            ghcr.io/rebel-project-core/ai-harness:${{ steps.meta.outputs.version }}-${{ matrix.architecture }}
           labels: ${{ steps.meta.outputs.labels }}
         if: matrix.platform == 'linux'
 
