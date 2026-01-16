@@ -51,17 +51,17 @@ If both keys are set, `GEMINI_API_KEY` takes precedence.
 **Example:**
 
 ```bash
-./ai-harness credo @../core
+./ai-harness credo {COMMAND}
 ```
 
 **Example with custom model:**
 
 ```bash
 # Use Gemini Pro
-./ai-harness --model gemini-1.5-pro credo @../core
+./ai-harness --model gemini-1.5-pro credo {COMMAND}
 
 # Use GPT-4 Turbo
-./ai-harness --model gpt-4-turbo credo @../core
+./ai-harness --model gpt-4-turbo credo {COMMAND}
 ```
 
 ### How it Works
