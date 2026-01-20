@@ -25,7 +25,7 @@ func analyzeOpenAI(prompt string, modelName string) (*AnalysisResult, error) {
 
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"model": modelName,
-		"messages": []interface{}{
+		"messages": []any{
 			map[string]any{
 				"role":    "user",
 				"content": prompt,

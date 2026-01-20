@@ -58,4 +58,3 @@ Ensure the 'matcher' regex is robust but specific enough to catch this error typ
 The 'packages' list should support multiple managers if applicable (e.g., usually apt or brew), but at least one is required.
 `, errorLog)
 }
-
