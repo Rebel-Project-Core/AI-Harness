@@ -3,6 +3,7 @@ package runner
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 )
@@ -14,14 +15,44 @@ type Result struct {
 	ExitCode int
 }
 
+// prefixWriter prepends a prefix to each line
+type prefixWriter struct {
+	w      io.Writer
+	prefix string
+	atBOL  bool
+}
+
+func (pw *prefixWriter) Write(p []byte) (n int, err error) {
+	for _, b := range p {
+		if pw.atBOL {
+			_, err = fmt.Fprint(pw.w, pw.prefix)
+			if err != nil {
+				return n, err
+			}
+			pw.atBOL = false
+		}
+		_, err = pw.w.Write([]byte{b})
+		if err != nil {
+			return n, err
+		}
+		n++
+		if b == '\n' {
+			pw.atBOL = true
+		}
+	}
+	return n, nil
+}
+
 // Run executes a command and returns the output
 func Run(command string, args []string, env []string) (*Result, error) {
 	cmd := exec.Command(command, args...)
 	cmd.Env = append(os.Environ(), env...)
 
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
+	prefix := fmt.Sprintf("[%s] ", command)
+
+	var stdoutBuf, stderrBuf bytes.Buffer
+	cmd.Stdout = &prefixWriter{w: &stdoutBuf, prefix: prefix, atBOL: true}
+	cmd.Stderr = &prefixWriter{w: &stderrBuf, prefix: prefix, atBOL: true}
 
 	err := cmd.Run()
 	exitCode := 0
@@ -34,8 +65,8 @@ func Run(command string, args []string, env []string) (*Result, error) {
 	}
 
 	return &Result{
-		Stdout:   stdout.String(),
-		Stderr:   stderr.String(),
+		Stdout:   stdoutBuf.String(),
+		Stderr:   stderrBuf.String(),
 		ExitCode: exitCode,
 	}, nil
 }
