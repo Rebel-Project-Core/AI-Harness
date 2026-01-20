@@ -6,8 +6,8 @@ AI-Harness is a smart wrapper tool designed to automate the resolution of depend
 
 *   **Automated Error Analysis**: Uses LLMs to parse error logs and identify missing system or language-specific dependencies.
 *   **Multi-Model Support**: Supports both Google Gemini and OpenAI ChatGPT.
-*   **Auto-Remediation**: Executes the suggested installation commands (e.g., `go get`, `apt-get install`, `pip install`) and retries the original command.
-*   **Pattern Learning**: Saves successful fixes as structured JSON "matcher" files in `../package-suggestions/matchers`, compatible with the Credo ecosystem.
+*   **Auto-Remediation**: Executes the suggested installation commands (e.g. `apt-get install`, `pip install`) and retries the original command.
+*   **Pattern Learning**: Saves successful fixes as structured JSON "matcher" files in `./matchers`, compatible with the Credo ecosystem.
 
 ## Prerequisites
 
@@ -71,10 +71,10 @@ If both keys are set, `GEMINI_API_KEY` takes precedence.
 3.  **Analysis**: Sends the logs to the selected LLM to extract:
     *   A regex to match the error.
     *   The missing package(s).
-    *   The package manager (e.g., `apt`, `brew`, `go`).
+    *   The package manager (e.g., `apt`, `pip`, `cran`).
     *   Immediate installation commands.
 4.  **Remediation**: Runs the installation commands.
-5.  **Retry**: Re-runs the original command.
+5.  **Retry**: Re-runs the original command with the new suggestions.
 6.  **Learning**: If the retry succeeds, saves a JSON matcher file to `../package-suggestions/matchers/` so the fix is recorded for future use.
 
 ## Development
