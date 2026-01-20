@@ -1,7 +1,19 @@
 BINARY_NAME=ai-harness
 GO_FILES=$(shell find . -name '*.go')
 CONTAINER_TOOL ?= docker
-CREDO_ARCH ?= amd64
+
+# Detect architecture
+UNAME_M := $(shell uname -m)
+ifeq ($(UNAME_M), x86_64)
+	CREDO_ARCH ?= amd64
+else ifeq ($(UNAME_M), arm64)
+	CREDO_ARCH ?= arm64
+else ifeq ($(UNAME_M), aarch64)
+	CREDO_ARCH ?= arm64
+else
+	CREDO_ARCH ?= amd64
+endif
+
 CREDO_IMAGE ?= ghcr.io/rebel-project-core/core:latest-$(CREDO_ARCH)
 
 .PHONY: all build test clean run vet image docker
