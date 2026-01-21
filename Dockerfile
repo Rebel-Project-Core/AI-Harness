@@ -1,7 +1,5 @@
-ARG CREDO_ARCH=amd64
-
 FROM golang:latest AS builder
-ARG CREDO_ARCH
+ARG TARGETARCH
 
 WORKDIR /app
 
@@ -9,7 +7,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=${CREDO_ARCH} go build -o ai-harness ./cmd/ai-harness
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build -o ai-harness ./cmd/ai-harness
 
 FROM ghcr.io/rebel-project-core/rebel:latest
 

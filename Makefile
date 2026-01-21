@@ -27,4 +27,4 @@ run: build
 image: docker
 
 docker:
-	$(CONTAINER_TOOL) build --build-arg CREDO_ARCH=$(CREDO_ARCH) -t ai-harness:latest .
+	$(CONTAINER_TOOL) build -t ai-harness:latest .
