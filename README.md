@@ -45,7 +45,7 @@ If both keys are set, `GEMINI_API_KEY` takes precedence.
 2.  Run your command through the harness:
 
 ```bash
-./ai-harness [--model <model_name>] <command> [arguments...]
+./ai-harness [--model <model_name>] [--matchers <path>] <command> [arguments...]
 ```
 
 **Example:**
@@ -54,11 +54,11 @@ If both keys are set, `GEMINI_API_KEY` takes precedence.
 ./ai-harness credo {COMMAND}
 ```
 
-**Example with custom model:**
+**Example with custom options:**
 
 ```bash
-# Use Gemini Pro
-./ai-harness --model gemini-1.5-pro credo {COMMAND}
+# Use Gemini Pro and save matchers to a specific directory
+./ai-harness --model gemini-1.5-pro --matchers ./my-matchers credo {COMMAND}
 
 # Use GPT-4 Turbo
 ./ai-harness --model gpt-4-turbo credo {COMMAND}
@@ -75,7 +75,7 @@ If both keys are set, `GEMINI_API_KEY` takes precedence.
     *   Immediate installation commands.
 4.  **Remediation**: Runs the installation commands.
 5.  **Retry**: Re-runs the original command with the new suggestions.
-6.  **Learning**: If the retry succeeds, saves a JSON matcher file to `../package-suggestions/matchers/` so the fix is recorded for future use.
+6.  **Learning**: If the retry succeeds, saves a JSON matcher file to the directory specified by `--matchers` (defaults to `./matchers`) so the fix is recorded for future use.
 
 ## Development
 
