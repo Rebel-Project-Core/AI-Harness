@@ -14,6 +14,7 @@ import (
 
 func main() {
 	modelFlag := flag.String("model", "", "Model name to use (e.g. gpt-4o, gemini-1.5-pro)")
+	matchersFlag := flag.String("matchers", "./matchers", "Directory to save generated matchers")
 	flag.Parse()
 
 	combinedLog, command, exitCode := getExecutionLog(flag.Args())
@@ -40,7 +41,7 @@ func main() {
 
 	if success {
 		// Save the successful match (or just the match if no verification was possible)
-		err := matcher.Save(combinedLog, analysis)
+		err := matcher.Save(*matchersFlag, combinedLog, analysis)
 		if err != nil {
 			fmt.Printf("Warning: Failed to save matcher: %v\n", err)
 		}
