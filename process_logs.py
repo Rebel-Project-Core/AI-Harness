@@ -36,14 +36,17 @@ def process_log(log_file, output_dir, new_logs_dir, gemini_key, openai_key):
     try:
         file_size = log_file.stat().st_size
         if file_size > MAX_LOG_BYTES:
+            head_size = 2 * 1024
+            tail_size = 30 * 1024
+            
             with open(log_file, "rb") as f_in:
-                f_in.seek(file_size - MAX_LOG_BYTES)
-                content = f_in.read().decode("utf-8", errors="ignore")
-
-            input_text = f"...[TRUNCATED_BY_HARNESS_PREPROCESSOR]\n{content}"
-            result = subprocess.run(
-                cmd, input=input_text, capture_output=True, text=True
-            )
+                head_content = f_in.read(head_size).decode("utf-8", errors="ignore")
+                f_in.seek(file_size - tail_size)
+                tail_content = f_in.read().decode("utf-8", errors="ignore")
+            
+            # Combine head and tail with a marker
+            input_text = f"{head_content}\n...[TRUNCATED_BY_HARNESS_PREPROCESSOR]...\n{tail_content}"
+            result = subprocess.run(cmd, input=input_text, capture_output=True, text=True)
         else:
             with open(log_file, "rb") as f_in:
                 result = subprocess.run(cmd, stdin=f_in, capture_output=True, text=True)
