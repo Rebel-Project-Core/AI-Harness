@@ -49,12 +49,18 @@ The JSON must follow this exact structure:
   "test_ok": ["string that matches the regex (e.g., the error line)"],
   "test_fail": ["string that should NOT match"],
   "packages": [
-    { "name": "package_name", "manager": "package_manager_command (e.g., apt, brew, go, pip, apk)" }
+    { "name": "package_name", "manager": "package_manager (e.g., apt, pip, cran, bioconductor)" }
   ],
   "install_commands": ["full command to install the dependencies now (e.g., 'apt-get install -y foo', 'go get bar')"]
 }
 
 Ensure the 'matcher' regex is robust but specific enough to catch this error type.
 The 'packages' list should support multiple managers if applicable (e.g., usually apt or brew), but at least one is required.
+
+Available package managers include:
+- apt
+- cran
+- pip
+- bioconductor
 `, errorLog)
 }
