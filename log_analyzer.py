@@ -106,7 +106,7 @@ class Application:
         parser.add_argument(
             "query", nargs="?", default="error failure exception traceback"
         )
-        parser.add_argument("-k", type=int, default=5)
+        parser.add_argument("-k", type=int, default=10)
         args = parser.parse_args()
 
         reader = LogReader(chunk_size=10)
