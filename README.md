@@ -77,6 +77,18 @@ If both keys are set, `GEMINI_API_KEY` takes precedence.
 5.  **Retry**: Re-runs the original command with the new suggestions.
 6.  **Learning**: If the retry succeeds, saves a JSON matcher file to the directory specified by `--matchers` (defaults to `./matchers`) so the fix is recorded for future use.
 
+## Log Analysis & Experiments
+
+This repository includes Python tools for advanced log analysis and parameter tuning:
+
+*   **`log_analyzer.py`**: A standalone TF-IDF vectorizer for semantic search within log files.
+*   **`process_logs.py`**: A batch processor that orchestrates the harness against a directory of logs, optionally utilizing the analyzer.
+*   **`scripts/`**: Contains experimental scripts and requirements.
+    *   **`experiment_k.py`**: A statistical tool to determine the optimal context window (Top-K chunks) for the LLM.
+
+### Experiment Results
+![Experiment K Results](experiment_k.png)
+
 ## Development
 
 *   **Build**: `make build`
